@@ -262,9 +262,9 @@ vector<int> ofApp::colorGenerator(string choice) {
 		color.push_back(127); //b
 		break;
 	case 1: //orange
-		color.push_back(255);
-		color.push_back(191);
-		color.push_back(127);
+		color.push_back(245);
+		color.push_back(150);
+		color.push_back(52);
 		break;
 	case 2: //green
 		color.push_back(127);
