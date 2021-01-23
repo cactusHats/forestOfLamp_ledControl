@@ -13,16 +13,7 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
 
 		//ランプの初期化
 		void resetLampPos(vector<Lamp>& lamps_);
@@ -31,11 +22,14 @@ class ofApp : public ofBaseApp{
 		void resizeLampPos(vector<Lamp>& lamps_);
 		void resetNeighborLampId(vector<Lamp>& lamps_);
 		long map(long x, long in_min, long in_max, long out_min, long out_max);
+		
+		//伝搬者
+		void createTeller(int id, int red, int green, int blue);
+		long timeThen = 0;
 
-		//osc
-		void soundEcho(int soundId, float vol, float pan);
-
+		//サウンド
 		float getPan(int id);
+		void soundEcho(int soundId, float vol, float pan);
 
 		//ファイルの読み込み
 		auto readFile(string fileName_, int colNum);
@@ -43,40 +37,17 @@ class ofApp : public ofBaseApp{
 		//最も近いランプの検索
 		int findNearestLamp(int x_, int y_);
 
-		const int lampRowNum = 8; //行
-		const int lampColNum = 11; //列(10)
-		const int lampNum = lampRowNum * lampColNum - (lampRowNum / 2); //ランプ個数
+		//ランプ
+		vector<Lamp> lamps; //ランプ
+		vector<Teller*> teller; //伝搬者
+		vector<int> colorGenerator(string choice); //rgb値生成
 
-		const int lampSize = 10;
-		const float expRate = 1.5; //拡大率
-		const float RedRate = 0.1; //縮小率
-
-		const float margin_x = 35.5 * expRate; //px
-		const float margin_y = 31 * expRate; //px
-		const float interval_x = 60 * expRate; //px
-		const float interval_y = 30 * expRate; //px
-
-		vector<Lamp> lamps; //ランプのvector
-
-		//伝搬役
-		vector<Teller*> teller;
-		//updateTime, id, r, g, b, cnt
-		vector<int> colorGenerator(string choice);
-
-		const int tInterval = 500; //伝搬速度[ms]
-		const int tNum = 84; //伝搬回数
-
+		//シリアル通信
 		ofSerial serial;
-		//void sendPacketToLed(vector<Lamp>& lamps_);
-		//int sendController = 0;
 		void sendPacketToLed(vector<Lamp>& lamps_, int id);
 
-		long timeThen = 0;
-
-		//osc
+		//OSC通信
 		ofxOscSender snd;
 		ofxOscReceiver rcv;
 		void rcvMessage();
-
-		void createTeller(int id, int red, int green, int blue);
 };

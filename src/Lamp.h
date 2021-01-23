@@ -35,11 +35,11 @@ class Lamp {
 	bool lighting = false;
 
 public:
-	//デフォルトコンストラクタ
-	Lamp() = default;
 	//コンストラクタ
+	Lamp() = default;
 	Lamp(int id_) : id(id_) {};
 	
+	//メンバ関数
 	void setRgbValue(int r_, int g_, int b_);
 	void resetRgbValue(int r_, int g_, int b_);
 	void setPos(float x_, float y_, float z_);
@@ -48,26 +48,23 @@ public:
 	void update();
 	void drawLamp();
 	void drawId();
-
 	void showPos();
 	void showColor();
 	void showNeighborLampId();
+	void setNeighborId(int id_);
+	void turnOn(int r_, int g_, int b_);
+	void turnOff();
+	
+	bool checkOff();
+	bool getState();
+
+	int getId();
+	int getNeighborId(int n_);
+	int getRVal();
+	int getGVal();
+	int getBVal();
 
 	float getPos_x();
 	float getPos_y();
 	float getPos_z();
-	int getId();
-
-	void setNeighborId(int id_);
-	int getNeighborId(int n_);
-
-	bool checkOff();
-	void turnOff();
-	void turnOn(int r_, int g_, int b_);
-
-	bool getState();
-
-	int getRVal();
-	int getGVal();
-	int getBVal();
 };

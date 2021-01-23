@@ -27,7 +27,7 @@ void ofApp::setup(){
 	//シリアルポートopen
 	serial.setup(PORTNAME, BAUDRATE);
 
-	//osc通信
+	//OSC通信
 	snd.setup(IP_HOST, PORT_TO_SCON);
 	rcv.setup(PORT_TO_LCON);
 }
@@ -35,14 +35,16 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-	//ランプの色変化
+	//ランプの色更新
 	for (int i = 0; i < lampNum; i++) {
 		lamps[i].update();
 	}
 
-	//ランプの点灯(伝搬)
+	//ランプの伝搬
+	//現存するtellerの数だけループ
 	for (int i = 0; i < teller.size(); i++) {
 
+		//一定時間経過したら次のランプへ伝搬
 		if (clock() - teller[i]->getUtime() > tInterval) {
 			teller[i]->setUtime(clock());
 
@@ -53,21 +55,24 @@ void ofApp::update(){
 				color.at(static_cast<int>(Color::Green)),
 				color.at(static_cast<int>(Color::Blue))
 			);
+
+			//伝搬回数をインクリメント
 			teller[i]->incrementCount();
 
 			//目標値をLEDに送信
 			sendPacketToLed(lamps, teller[i]->getId());
 
-			//次のIDをセット			
-			int nextId = 0;
+			//伝搬方向をセット
 			bool direction = teller[i]->getDirection();
 
+			//次のIDをセット			
+			int nextId = 0;
 			if(direction) nextId = lamps[teller[i]->getId()].getNeighborId(static_cast<int>(IdList::Cw));
 			else nextId = lamps[teller[i]->getId()].getNeighborId(static_cast<int>(IdList::Ccw));
 
 			teller[i]->setId(nextId);
 
-			//インスタンス削除
+			//1周したらインスタンス削除
 			if (teller[i]->getCount() > tNum) {
 				teller.erase(teller.begin() + i);
 			}
@@ -88,7 +93,6 @@ void ofApp::update(){
 	while (rcv.hasWaitingMessages()) {
 		rcvMessage();
 	}
-
 
 	/*
 	//LEDに送信
@@ -113,6 +117,7 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+	//効果音のテスト
 	if (key == 'a') {
 		soundEcho(1, 1.5f, 1.5f);
 	}
@@ -122,22 +127,9 @@ void ofApp::keyPressed(int key){
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-	
-}
-
-//--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+	//ランプをUIから点灯させる処理
+
 	//伝搬者のセット
 	int time = clock();
 	int id = findNearestLamp(x, y);
@@ -146,6 +138,7 @@ void ofApp::mousePressed(int x, int y, int button){
 	teller.push_back(new Teller(time, id, color, count, true)); //clockwise
 	teller.push_back(new Teller(time, id, color, count, false)); //counterclockwise
 
+	//効果音の再生
 	int soundId = ofRandom(0, 3) + 1; //[0-2]+1
 	float vol = 1.0f;
 	float pan = getPan(id);
@@ -153,32 +146,7 @@ void ofApp::mousePressed(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//--------------------------------------------------------------
-//2次元ベクトルを表示
+//2次元ベクトルを表示する関数
 void printVec(const vector<vector<float>> v) {
 	for (int i = 0; i < v.size(); i++) {
 		for (int j = 0; j < v[i].size(); j++) {
@@ -190,6 +158,7 @@ void printVec(const vector<vector<float>> v) {
 }
 
 //--------------------------------------------------------------
+//ファイルを読み込む関数
 auto ofApp::readFile(string fileName_, int colNum) {
 
 	ifstream file(fileName_);
@@ -204,8 +173,6 @@ auto ofApp::readFile(string fileName_, int colNum) {
 	int id;
 	float d1, d2, d3;
 	id = d1 = d2 = d3 = 0;
-	//pos : id, x, y, z;
-	//color : id, r, g, b
 	vector<vector<float>> data;
 
 	if (colNum == 3) {
@@ -238,6 +205,7 @@ auto ofApp::readFile(string fileName_, int colNum) {
 }
 
 //--------------------------------------------------------------
+//マウスのクリック位置から最も近いランプIDを取得する関数
 int ofApp::findNearestLamp(int x_, int y_) {
 	x_ -= margin_x - interval_x / 2;
 	y_ -= margin_y - interval_y / 2;
@@ -260,7 +228,7 @@ int ofApp::findNearestLamp(int x_, int y_) {
 }
 //--------------------------------------------------------------
 
-//色の生成
+//色を生成する関数(UIから操作する場合)
 vector<int> ofApp::colorGenerator(string choice) {
 
 	int mode = 0;
@@ -325,6 +293,7 @@ vector<int> ofApp::colorGenerator(string choice) {
 }
 
 //--------------------------------------------------------------
+//ランプの描画座標を初期化する関数
 void ofApp::resetLampPos(vector<Lamp>& lamps_) {
 	//読み込んだ位置データを取得
 	vector<vector<float>> pos = readFile("../../lampHeightMaker/lampHeightMaker/keep/lampPos5.dat", 4);
@@ -342,6 +311,7 @@ void ofApp::resetLampPos(vector<Lamp>& lamps_) {
 }
 
 //--------------------------------------------------------------
+//ランプのサイズを初期化する関数
 void ofApp::resizeLampPos(vector<Lamp>& lamps_) {
 	try {
 		for (int i = 0; i < lamps_.size(); i++) {
@@ -354,9 +324,9 @@ void ofApp::resizeLampPos(vector<Lamp>& lamps_) {
 }
 
 //--------------------------------------------------------------
+//次に伝搬するランプIDを初期化する関数
 void ofApp::resetNeighborLampId(vector<Lamp>& lamps_) {
 	//読み込んだidデータを取得
-	//vector<vector<float>> id = readFile("./bin/data/neighborLampList.dat");
 	vector<vector<float>> id = readFile("../../lampListGenerator2/lampListGenerator2/lampOrder.dat", 3);
 
 	//ランプ近隣のidデータを更新
@@ -377,6 +347,7 @@ long ofApp::map(long x, long in_min, long in_max, long out_min, long out_max) {
 }
 
 //--------------------------------------------------------------
+//soundControlに信号を送信する関数
 void ofApp::soundEcho(int soundId, float vol, float pan) {
 	ofxOscMessage m;
 
@@ -400,6 +371,7 @@ void ofApp::soundEcho(int soundId, float vol, float pan) {
 }
 
 //--------------------------------------------------------------
+//ランプIDから左右の音量バランスを返す関数
 float ofApp::getPan(int id) {
 	if (0 <= id && id <= 9) {
 		id -= (10 * 0) + (11 * 0);
@@ -435,6 +407,7 @@ float ofApp::getPan(int id) {
 }
 
 //--------------------------------------------------------------
+//ランプの色を初期関する関数
 void ofApp::resetLampColor(vector<Lamp>& lamps_) {
 	//読み込んだ色データを取得
 	vector<vector<float>> color = readFile("./bin/data/lampInitialColor.dat", 4);
@@ -442,9 +415,7 @@ void ofApp::resetLampColor(vector<Lamp>& lamps_) {
 	//インスタンスの位置/idデータを更新
 	try {
 		for (int i = 0; i < lamps_.size(); i++) {
-			//printf(">> %.f, %.1f, %.1f, %.1f\n", color[i].at(0), color[i].at(1), color[i].at(2), color[i].at(3));
 			lamps_[i].resetRgbValue(int(color[i].at(1)), int(color[i].at(2)), int(color[i].at(3))); //rgb
-			//lamps[i].showColor();
 		}
 	}
 	catch (out_of_range& e) {
@@ -453,11 +424,11 @@ void ofApp::resetLampColor(vector<Lamp>& lamps_) {
 }
 
 //--------------------------------------------------------------
+//ランプの描画サイズを初期化する関数
 void ofApp::resetLampSize(vector<Lamp>& lamps_) {
 	try {
 		for (int i = 0; i < lamps_.size(); i++) {
-			//lamps_[i].setSize(lampSize);
-			lamps_[i].setSize(lamps_[i].getPos_z()*RedRate);
+			lamps_[i].setSize(lamps_[i].getPos_z()*RedRate); //Z軸の値に縮小率を掛けてランプ描画サイズとする
 		}
 	}
 	catch(out_of_range& e){
@@ -465,13 +436,9 @@ void ofApp::resetLampSize(vector<Lamp>& lamps_) {
 	}
 }
 
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
-}
-
 /*
 //--------------------------------------------------------------
+//マイコンにLED制御データを送る関数(旧)
 void ofApp::sendPacketToLed(vector<Lamp>& lamps_) {
 
 	const int lampNum = 14;
@@ -543,9 +510,8 @@ void ofApp::sendPacketToLed(vector<Lamp>& lamps_) {
 */
 
 //--------------------------------------------------------------
+//マイコンにLED制御データを送る関数(新)
 void ofApp::sendPacketToLed(vector<Lamp>& lamps_, int id) {
-	//const int lampNum = 1;
-	//const int packetNum = int(Color::NUM_COLOR) * lampNum + 1; //先頭識別子+RGB
 	const int packetNum = int(Color::NUM_COLOR) + 1; //先頭識別子+RGB
 	uint8_t packets[packetNum];
 
@@ -562,6 +528,7 @@ void ofApp::sendPacketToLed(vector<Lamp>& lamps_, int id) {
 }
 
 //--------------------------------------------------------------
+//OSCデータを受信する関数
 void ofApp::rcvMessage() {
 	ofxOscMessage m;
 	rcv.getNextMessage(&m);
@@ -585,6 +552,7 @@ void ofApp::rcvMessage() {
 }
 
 //--------------------------------------------------------------
+//伝搬者を生成する関数
 void ofApp::createTeller(int id_, int red_, int green_, int blue_) {
 	//伝搬者のセット
 	int time = clock();
@@ -604,4 +572,3 @@ void ofApp::createTeller(int id_, int red_, int green_, int blue_) {
 	float pan = getPan(id_);
 	soundEcho(soundId, vol, pan);
 }
-
