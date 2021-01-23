@@ -30,6 +30,12 @@ void ofApp::setup(){
 	//OSC通信
 	snd.setup(IP_HOST, PORT_TO_SCON);
 	rcv.setup(PORT_TO_LCON);
+
+	cout << endl;
+	cout << "---------------------" << endl;
+	cout << "--- Process start ---" << endl;
+	cout << "---------------------" << endl;
+	cout << endl;
 }
 
 //--------------------------------------------------------------
@@ -296,7 +302,8 @@ vector<int> ofApp::colorGenerator(string choice) {
 //ランプの描画座標を初期化する関数
 void ofApp::resetLampPos(vector<Lamp>& lamps_) {
 	//読み込んだ位置データを取得
-	vector<vector<float>> pos = readFile("../../lampHeightMaker/lampHeightMaker/keep/lampPos5.dat", 4);
+	//vector<vector<float>> pos = readFile("../../lampHeightMaker/lampHeightMaker/keep/lampPos5.dat", 4); //visual studioから立ち上げる場合
+	vector<vector<float>> pos = readFile("../lampHeightMaker/lampHeightMaker/keep/lampPos5.dat", 4); //バッチファイルから立ち上げる場合
 
 	//インスタンスの位置/idデータを更新
 	try {
@@ -327,7 +334,8 @@ void ofApp::resizeLampPos(vector<Lamp>& lamps_) {
 //次に伝搬するランプIDを初期化する関数
 void ofApp::resetNeighborLampId(vector<Lamp>& lamps_) {
 	//読み込んだidデータを取得
-	vector<vector<float>> id = readFile("../../lampListGenerator2/lampListGenerator2/lampOrder.dat", 3);
+	//vector<vector<float>> id = readFile("../../lampListGenerator2/lampListGenerator2/lampOrder.dat", 3); //visual studioから立ち上げる場合
+	vector<vector<float>> id = readFile("../lampListGenerator2/lampListGenerator2/lampOrder.dat", 3); //バッチファイルから立ち上げる場合
 
 	//ランプ近隣のidデータを更新
 	try {
@@ -410,8 +418,9 @@ float ofApp::getPan(int id) {
 //ランプの色を初期関する関数
 void ofApp::resetLampColor(vector<Lamp>& lamps_) {
 	//読み込んだ色データを取得
-	vector<vector<float>> color = readFile("./bin/data/lampInitialColor.dat", 4);
-
+	//vector<vector<float>> color = readFile("./bin/data/lampInitialColor.dat", 4); //visual studioから立ち上げる場合
+	vector<vector<float>> color = readFile("../forestOfLamp_ledControl/forestOfLamp_ledControl/bin/data/lampInitialColor.dat", 4); //バッチファイルから立ち上げる場合
+	
 	//インスタンスの位置/idデータを更新
 	try {
 		for (int i = 0; i < lamps_.size(); i++) {
